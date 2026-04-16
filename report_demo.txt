@@ -1,0 +1,2895 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requirement Design Specification PRJ301 - Group 7</title>
+    <style>
+        /* Reset cơ bản */
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* 1. THIẾT LẬP KÍCH THƯỚC TRANG IN A4 TỰ ĐỘNG - ĐỀU CÁC MARGIN */
+        @page {
+            size: A4 portrait;
+            margin: 20mm;
+            /* Lề đều 2cm cho cả 4 cạnh (Trang in) */
+        }
+
+        /* 2. HIỂN THỊ MÔ PHỎNG GIẤY A4 TRÊN MÀN HÌNH WEB */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            color: #000000;
+            background-color: #e0e0e0;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background-color: #ffffff;
+            margin: 0 auto;
+            padding: 20mm;
+            /* Lề đều 2cm (Màn hình) */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 3. CĂN LỀ 2 BÊN VÀ ĐỊNH DẠNG ĐOẠN VĂN */
+        p {
+            text-align: justify;
+            /* Căn đều 2 bên margin */
+            margin-bottom: 12px;
+        }
+
+        /* 4. ĐỊNH DẠNG KHI NHẤN LỆNH IN (Ctrl + P) */
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+
+            .a4-page {
+                width: 100%;
+                min-height: auto;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+
+            /* GIỮ TIÊU ĐỀ VÀ BẢNG LUÔN ĐI CÙNG NHAU */
+            h2,
+            h3,
+            h4 {
+                page-break-after: avoid;
+                break-after: avoid;
+                page-break-inside: avoid;
+            }
+
+            /* KHÔNG CHO PHÉP NGẮT TRANG NGAY SAU TIÊU ĐỀ */
+            h2+table,
+            h3+table,
+            h4+table,
+            h2+.image-box,
+            h3+.image-box,
+            h4+.image-box {
+                page-break-before: avoid;
+                break-before: avoid;
+            }
+
+            /* BLOCK NÀY GIỮ CẢ CỤM TIÊU ĐỀ + ẢNH + BẢNG */
+            .content-block {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 20px;
+            }
+
+            /* CHO PHÉP BẢNG DÀI NGẮT TRANG NHƯNG GIỮ TIÊU ĐỀ CỘT */
+            table {
+                page-break-inside: auto;
+                break-inside: auto;
+            }
+
+            tr,
+            td,
+            th {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            /* NGẮT TRANG CHO CÁC PHẦN CHÍNH */
+            .page-break {
+                page-break-after: always !important;
+                break-after: page !important;
+                clear: both;
+            }
+
+            .section-header {
+                page-break-before: always;
+                break-before: page;
+            }
+
+            /* GIỮ CHO ẢNH VÀ CHÚ THÍCH ĐI CÙNG NHAU */
+            .image-box {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* TRÁNH DÒNG MỒ CÔI */
+            p {
+                orphans: 3;
+                widows: 3;
+            }
+        }
+
+        /* LỆNH NGẮT TRANG TUYỆT ĐỐI */
+        .page-break {
+            page-break-after: always !important;
+            break-after: page !important;
+        }
+
+        .page-break-before {
+            page-break-before: always !important;
+            break-before: page !important;
+        }
+
+        /* 5. ĐẢM BẢO TRANG BÌA VÀ MỤC LỤC TRÊN 1 TRANG RIÊNG */
+        .full-page-section {
+            min-height: 250mm;
+            /* Giảm xuống để tránh tràn trang gây trang trắng */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Căn giữa nội dung theo chiều dọc */
+        }
+
+        /* --- PHẦN 6 CẢI TIẾN: KHUNG CHÈN ẢNH VÀ CHỐNG TRÀN --- */
+.image-box {
+    border: none;
+    background-color: #f4f7f9;
+    text-align: center;
+    padding: 20px;
+    margin: 20px 0;
+    color: #555;
+    
+    /* Chống ngắt trang giữa chừng cụm Ảnh + Chú thích */
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+/* KHÓA CHẶT KÍCH THƯỚC ẢNH */
+.image-box img {
+    /* Đảm bảo ảnh không bao giờ vượt quá chiều rộng vùng nội dung (đã trừ padding) */
+    max-width: 100% !important; 
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+    
+    /* Thêm độ sắc nét khi in */
+    image-rendering: -webkit-optimize-contrast;
+}
+
+.image-box p {
+    font-size: 11pt;
+    color: #3a3a3a;
+    text-align: center;
+    margin-top: 15px; /* Khoảng cách giữa ảnh và chữ Figure */
+    font-style: italic;
+    line-height: 1.3;
+}
+
+/* TINH CHỈNH RIÊNG KHI XUẤT PDF (Ctrl + P) */
+@media print {
+    /* Bỏ màu nền xám để PDF trông sạch sẽ, chuyên nghiệp hơn */
+    .image-box {
+        background-color: transparent !important;
+        padding: 10px 0;
+    }
+    
+    /* Đảm bảo ảnh luôn nằm trong vùng an toàn của trang A4 */
+    .image-box img {
+        max-width: 100% !important;
+        /* Tránh tình trạng trình duyệt tự scale làm mờ ảnh */
+        transform: scale(1); 
+    }
+    
+    /* Tránh việc Title nằm ở cuối trang 1 còn Ảnh nằm ở đầu trang 2 */
+    h2 + .image-box, 
+    h3 + .image-box, 
+    h4 + .image-box {
+        page-break-before: avoid;
+    }
+}
+
+        /* 7. DYNAMIC TABLE OF CONTENT */
+        #toc ul {
+            list-style-type: none;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        #toc>ul {
+            padding-left: 0;
+        }
+
+        #toc li {
+            margin-bottom: 8px;
+        }
+
+        #toc .toc-h4 {
+            font-size: 12pt;
+            margin-left: 30px;
+            color: #555;
+        }
+
+        #toc li strong {
+            color: #003366;
+        }
+
+        #toc a {
+            text-decoration: none;
+            color: #003366;
+            /* Đồng bộ màu xanh báo cáo */
+        }
+
+        #toc a:hover {
+            text-decoration: underline;
+            color: #d32f2f;
+            /* Màu nhấn khi hover */
+        }
+
+        /* 8. FLOATING SIDEBAR NAVIGATION (Chỉ hiện trên web) */
+        #floating-toc {
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            width: 280px;
+            max-height: 80vh;
+            background-color: #ffffff;
+            border-left: 4px solid #003366;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        #floating-toc h5 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 14pt;
+            color: #003366;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        #floating-toc ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        #floating-toc li {
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        #floating-toc a {
+            text-decoration: none;
+            color: #444;
+            font-size: 10pt;
+            display: block;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        #floating-toc a:hover {
+            background-color: #f0f4f8;
+            color: #003366;
+        }
+
+        #floating-toc .toc-h2 {
+            font-weight: bold;
+            color: #003366;
+            margin-top: 10px;
+        }
+
+        #floating-toc .toc-h3 {
+            padding-left: 15px;
+        }
+
+        #floating-toc .toc-h4 {
+            padding-left: 30px;
+            color: #777;
+            font-style: italic;
+        }
+
+        /* ẨN KHI IN */
+        @media print {
+            #floating-toc {
+                display: none !important;
+            }
+        }
+
+        /* 9. ĐỊNH DẠNG TIÊU ĐỀ VÀ BẢNG BIỂU */
+        h1 {
+            font-size: 18pt;
+            color: #003366;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 16pt;
+            color: #003366;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 5px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 14pt;
+            color: #000000;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        h4 {
+            font-size: 12pt;
+            color: #434343;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #000000;
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+            color: #003366;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* List styling */
+        ul,
+        ol {
+            margin-bottom: 15px;
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f8f8f8;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 11pt;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="a4-page">
+        <!-- COVER SECTION -->
+        <div class="page-break full-page-section" style="text-align: center;">
+            <div style="margin-bottom: 20mm;">
+                <a href="https://daihoc.fpt.edu.vn/" target="_blank">
+                    <img src="https://daihoc.fpt.edu.vn/wp-content/themes/fpt-university/assets/images/logo.png"
+                        alt="FPT Logo" style="width: 300px; margin-bottom: 20px;">
+                </a>
+                <h1 style="font-size: 22pt; margin-top: 40px;">Requirement Design Specification PRJ301</h1>
+
+            </div>
+            <div>
+                <h2 style="border: none; margin-top: 10px; font-size: 18pt; text-align: center;">
+                    Vehicle Parking System
+                </h2>
+                <p style="text-align: center;"><strong>Version:</strong> 1.0</p>
+
+            </div>
+
+            <div style="font-size: 14pt;">
+                <p style="text-align: center;"><strong>Group:</strong> 7</p>
+                <div style="display: inline-block; text-align: left; margin-top: 20px;">
+                    <p style="margin: 5px 0;"><strong>Members:</strong></p>
+                    <p style="margin: 5px 0;">HE200115 – Nguyễn Thành Đạt</p>
+                    <p style="margin: 5px 0;">HE200247 – Nguyễn Nhật Minh</p>
+                    <p style="margin: 5px 0;">HE201167 – Nguyễn Minh Hiếu</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TABLE OF CONTENT -->
+        <div class="page-break full-page-section">
+            <h2>Table of Content</h2>
+            <div id="toc"></div>
+        </div>
+
+        <!-- I. OVERVIEW -->
+        <h2 class="section-header">I. Overview</h2>
+        <p>
+            The Vehicle Parking System is a web-based application designed to efficiently manage parking sites,
+            monitor vehicle entries and exits, and process payment transactions automatically.
+        </p>
+        <p>
+            The system provides specialized access levels for Customers, Staff, Administrators, and Managers
+            to ensure a secure and organized workflow. It allows customers to top up their digital wallets,
+            purchase monthly subscriptions, and book parking slots; enables staff to manage parking cards
+            and operate check-in/check-out; and empowers administrators to oversee the entire system,
+            configure pricing, and manage facilities.
+        </p>
+
+        <p>
+            The project is developed using Java Servlet, JSP, and JDBC technologies, with data managed by the Microsoft
+            SQL Server database system. This system was created to comprehensively digitize the parking operations
+            process, enhance the accuracy of fee calculations, and optimize the overall experience for both drivers and
+            facility operators.
+        </p>
+
+        <!-- 1. USER REQUIREMENTS -->
+        <h2>1. User Requirements</h2>
+
+        <h3>1.1 Actors</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">No</th>
+                    <th width="15%">Actor</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td><strong>Customer</strong></td>
+                    <td style="text-align: justify;">The main user of the system, can view available site. Customers can
+                        create an account, top up their digital wallet, purchase monthly/yearly parking packages
+                        (subscriptions), reserve parking spots in advance (bookings), and track their parking and
+                        payment history.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td><strong>Staff</strong></td>
+                    <td style="text-align: justify;">Employees working directly at the parking facilities; responsible
+                        for managing parking cards, processing vehicle entries and exits (Check-in/Check-out), and
+                        monitoring current capacity.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td><strong>Manager</strong></td>
+                    <td style="text-align: justify;">Managers of specific parking sites; authorized to view revenue
+                        reports, track vehicle statistics, and monitor personnel for their assigned site.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td><strong>Admin</strong></td>
+                    <td style="text-align: justify;">High-level system administrator; manages all accounts, site
+                        infrastructure, dynamic pricing tables, and monitors system-wide revenue.</td>
+                </tr>
+
+                <tr>
+                    <td class="text-center">5</td>
+                    <td><strong>Guest</strong></td>
+                    <td style="text-align: justify;">Similar to Customer - view available parking site, Guest can check
+                        in and out and purchase subscription to the parking site without login.</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <h3>1.2 Use Cases</h3>
+
+        <div class="content-block">
+            <p><strong>a. Diagram(s)</strong></p>
+            <div class="image-box">
+                <a href="src-img/fig_1_use_case.png" target="_blank">
+                    <img src="src-img/fig_1_use_case.png" alt="Overall System Use Case Diagram"
+                        style="width: 50%; height: auto;">
+                </a>
+                <p>Figure 1. Overall System Use Case Diagram
+                </p>
+            </div>
+        </div>
+
+        <p><strong>b. Descriptions</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">ID</th>
+                    <th width="15%">Feature</th>
+                    <th width="25%">Use Case</th>
+                    <th width="55%">Use Case Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td rowspan="7" style="vertical-align: middle;"><strong>Customer</strong></td>
+                    <td>View Parking Sites</td>
+                    <td style="text-align: justify;">Browse and view a list of available parking locations, including
+                        addresses, operating hours, and current status (available slots) without requiring a login.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td>View Site Details</td>
+                    <td style="text-align: justify;">View comprehensive information about a specific parking site, such
+                        as pricing tables (hourly/monthly), and exact location on the map.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td>Register / Login</td>
+                    <td style="text-align: justify;">Create a new personal account or authenticate existing credentials
+                        to access personalized features and transaction history.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td>Booking Hourly Card</td>
+                    <td style="text-align: justify;">Book a short-term parking slot for a specific date and time. Note:
+                        The booking duration must be at least 1 hour to be valid.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td>Buying Subscription (Monthly Card)</td>
+                    <td style="text-align: justify;">Subscribe to a long-term parking service for a specific vehicle at
+                        a chosen site, typically offering better rates for recurring users.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td>Update Profile</td>
+                    <td style="text-align: justify;">Manage and edit personal information, including contact details
+                        (phone, email) and vehicle information (license plate, vehicle type).</td>
+                </tr>
+                <tr>
+                    <td class="text-center">7</td>
+                    <td>View history</td>
+                    <td style="text-align: justify;">View all history subscriptions and bookings.</td>
+                </tr>
+
+                <tr>
+                    <td class="text-center">4</td>
+                    <td rowspan="7" style="vertical-align: middle;"><strong>Staff</strong></td>
+                    <td>Log In / Log Out</td>
+                    <td style="text-align: justify;">Authenticate into the ParkStaff system and end the working shift
+                        session.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td>Process Vehicle Check-In</td>
+                    <td style="text-align: justify;">Scan parking card, input/capture license plate, identify vehicle
+                        type (car/motorbike), and create an active parking session.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td>Process Vehicle Check-Out</td>
+                    <td style="text-align: justify;">Scan parking card, verify if the output license plate matches the
+                        entry plate, and check the subscription status.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">7</td>
+                    <td>Calculate Fee & Process Payment</td>
+                    <td style="text-align: justify;">Automatically calculate parking fees based on duration and price
+                        configurations (hourly, booking, or subscription), display the fee modal, and process the
+                        checkout transaction.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">8</td>
+                    <td>Search and Query Vehicles</td>
+                    <td style="text-align: justify;">Search for specific vehicles currently in the parking site using
+                        license plate or card ID, and view their current parking status.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">9</td>
+                    <td>Manage Subscriptions</td>
+                    <td style="text-align: justify;">Look up registered monthly passes for regular customers, check card
+                        validity/expiration dates, and process subscription renewals.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">10</td>
+                    <td>View Parking History</td>
+                    <td style="text-align: justify;">View logs of recent vehicle entries and exits, and track daily
+                        check-in/check-out records handled at the station.</td>
+                </tr>
+
+                <tr>
+                    <td class="text-center">11</td>
+                    <td rowspan="5" style="vertical-align: middle;"><strong>Manager</strong></td>
+                    <td>Log In / Log Out</td>
+                    <td style="text-align: justify;">Authenticate as manager to access the site-specific management
+                        dashboard.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">12</td>
+                    <td>View site dashboard</td>
+                    <td style="text-align: justify;">Monitor real-time statistics, active sessions, and revenue strictly
+                        for their assigned parking site.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">13</td>
+                    <td>View site history</td>
+                    <td style="text-align: justify;">Control subscription and history transactions.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">14</td>
+                    <td>View site reports</td>
+                    <td style="text-align: justify;">Monitor site system revenue, overall staff statistics, and site
+                        generate financial reports.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">15</td>
+                    <td>View site staff</td>
+                    <td style="text-align: justify;">Control all staffs of their parking site.</td>
+                </tr>
+
+                <tr>
+                    <td class="text-center">16</td>
+                    <td rowspan="6" style="vertical-align: middle;"><strong>Admin</strong></td>
+                    <td>Log In / Log Out</td>
+                    <td style="text-align: justify;">Authenticate as system administrator to access the full global
+                        admin panel.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">17</td>
+                    <td>Mange parking site</td>
+                    <td style="text-align: justify;">Add, edit, or close parking sites, and define their specific
+                        parking areas and capacities.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">18</td>
+                    <td>Manage staff accounts</td>
+                    <td style="text-align: justify;">Add, edit, view, or deactivate (soft delete) Manager, Staff
+                        accounts.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">19</td>
+                    <td>Manage price configs</td>
+                    <td style="text-align: justify;">Set up and update dynamic pricing rules (hourly, monthly) for
+                        different vehicle types at each site.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">20</td>
+                    <td>View system reports</td>
+                    <td style="text-align: justify;">Monitor global system revenue, overall staff statistics, and
+                        generate financial reports.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">21</td>
+                    <td>Manage history</td>
+                    <td style="text-align: justify;">Control subscription and history transactions.</td>
+                </tr>
+
+                <tr>
+                    <td class="text-center">22</td>
+                    <td rowspan="3" style="vertical-align: middle;"><strong>Guest</strong></td>
+                    <td>View parking sites</td>
+                    <td style="text-align: justify;">Browse and view public information about available parking sites
+                        without login.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">23</td>
+                    <td>Casual check-in & check-out</td>
+                    <td style="text-align: justify;">Enter and exit the parking site as a casual user by receiving a
+                        parking card and paying the hourly fee without needing an account.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">24</td>
+                    <td>Register monthly subscription</td>
+                    <td style="text-align: justify;">Apply for a monthly parking pass by providing vehicle details and
+                        personal information.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 2. OVERALL FUNCTIONALITIES -->
+        <h2>2. Overall Functionalities</h2>
+        <h3>2.1 Screens Flow</h3>
+        <div class="image-box">
+            <a href="src-img/fig_2.1_use_case.png" target="_blank">
+                <img src="src-img/fig_2.1_use_case.png" alt="Screen Flow"
+                    style="width: 100%; height: auto;">
+            </a>
+            <p>Figure 2. Screen Flow
+            </p>
+        </div>
+
+        <h3>2.2 Screen Descriptions</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">#</th>
+                    <th width="20%">Feature</th>
+                    <th width="25%">Screen</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td><strong>Registration</strong></td>
+                    <td>Registration Page</td>
+                    <td style="text-align: justify;">Allows new users (Guests) to create a Customer account to access
+                        booking and subscription features.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td><strong>Login</strong></td>
+                    <td>Login Page</td>
+                    <td style="text-align: justify;">Enables Customers, Staff, Managers, and Admins to authenticate and
+                        log in using their credentials.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td><strong>Home Navigation</strong></td>
+                    <td>Home Page</td>
+                    <td style="text-align: justify;">Displays system introduction, public parking sites, purchase
+                        subscription and provides access to Login and Registration.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td><strong>Search Sites</strong></td>
+                    <td>Booking</td>
+                    <td style="text-align: justify;">Users can search for available parking sites by name, location, or
+                        region (North, Middle, South).</td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td><strong>View Site Details</strong></td>
+                    <td>Site Details Page</td>
+                    <td style="text-align: justify;">Shows detailed information about a selected parking site, including
+                        capacity, vehicle types supported, and pricing.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td><strong>Profile</strong></td>
+                    <td>View Job Details</td>
+                    <td style="text-align: justify;">Shows detailed information about a selected job and allows
+                        applying.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">7</td>
+                    <td><strong>Profile Management</strong></td>
+                    <td>Customer Profile</td>
+                    <td style="text-align: justify;">Customers can update their personal information.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">8</td>
+                    <td><strong>Booking Management</strong></td>
+                    <td>Booking Slot Page</td>
+                    <td style="text-align: justify;">Customers can reserve a parking slot in advance for a specific
+                        vehicle type, date, and time.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">9</td>
+                    <td><strong>Subscription Management</strong></td>
+                    <td>Subscription Page</td>
+                    <td style="text-align: justify;">Customers can register, view, or renew monthly/ yearly parking
+                        passes (subscriptions) for their vehicles.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">10</td>
+                    <td><strong>History Tracking</strong></td>
+                    <td>Parking & Transaction History (customer proflie)</td>
+                    <td style="text-align: justify;">Customers can view their past parking sessions, bookings, and
+                        detailed payment transactions.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">11</td>
+                    <td><strong>Staff Dashboard (Check-in / Check-out)</strong></td>
+                    <td>Staff Dashboard</td>
+                    <td style="text-align: justify;">Manage real-time vehicle entry and exit.<br><br>Main operational
+                        interface featuring dual actions: inputting Card ID/License Plate for Check-in, and processing
+                        Check-out with an automated fee estimation modal. Includes the Offcanvas Sidebar for navigation.
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-center">12</td>
+                    <td><strong>Vehicle Searching</strong></td>
+                    <td>Vehicle Searching Page</td>
+                    <td style="text-align: justify;">Query real-time and historical vehicle data.<br><br>Contains search
+                        inputs (by License Plate or Card ID), status filters, and a data table displaying current
+                        parking sessions, entry times, and vehicle types.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">13</td>
+                    <td><strong>Staff Subscription Management</strong></td>
+                    <td>Subscription Management Screen</td>
+                    <td style="text-align: justify;">Monitor and renew monthly parking passes.<br><br>Displays a
+                        paginated list of registered subscribers, pass validity state (Active/Expired), vehicle details,
+                        and action buttons for pass renewal or registering new monthly tickets.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">14</td>
+                    <td><strong>Parking History Management</strong></td>
+                    <td>Parking History Screen</td>
+                    <td style="text-align: justify;">Track daily transaction logs.<br><br>Shows a detailed table of
+                        completed parking sessions, including check-in/out timestamps, calculated fees, and total
+                        parking duration handled during the staff's shift.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">15</td>
+                    <td><strong>Fee Estimation</strong></td>
+                    <td>Payment Modal (Popup)</td>
+                    <td style="text-align: justify;">Display pricing details and confirm checkout.<br><br>A popup
+                        overlay triggered during check-out, displaying extracted data (Time In, Duration, Expected Fee)
+                        and a final confirmation button to complete the transaction.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">16</td>
+                    <td><strong>Manager Dashboard</strong></td>
+                    <td>Manager Dashboard</td>
+                    <td style="text-align: justify;">Main interface for managers to view revenue, transactions, and
+                        statistics strictly for their assigned parking site.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">17</td>
+                    <td><strong>Admin Dashboard</strong></td>
+                    <td>Admin Dashboard</td>
+                    <td style="text-align: justify;">Main interface for admins to monitor global system revenue, overall
+                        user statistics, and overall operations.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">18</td>
+                    <td><strong>Manage Staff</strong></td>
+                    <td>Manage Staff</td>
+                    <td style="text-align: justify;">Admins can add, edit, or deactivate (soft delete) Admin, Manager,
+                        Staff accounts, searching staff by id, name, role and site that they signed.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">19</td>
+                    <td><strong>Manage Sites & Areas</strong></td>
+                    <td>Manage Parking Sites</td>
+                    <td style="text-align: justify;">Admins can create new parking sites, configure specific parking
+                        areas, and define slot capacities, create the amount of cards, also find any site by searching
+                        bar.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">20</td>
+                    <td><strong>Manage Pricing</strong></td>
+                    <td>Update ParkingSites</td>
+                    <td style="text-align: justify;">Admins can set up and dynamically update base prices (hourly,
+                        monthly) for different vehicle types.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">21</td>
+                    <td><strong>Global Reports</strong></td>
+                    <td>System Reports</td>
+                    <td style="text-align: justify;">Admins and Manager can generate and review overall financial
+                        reports and payment transactions across all sites or only one site that choosen by admin.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">22</td>
+                    <td><strong>Logout</strong></td>
+                    <td>Logout</td>
+                    <td style="text-align: justify;">Allows users to securely exit the system and end their session.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="page-break-before: always;"></div>
+
+        <h3>2.3 Screen Authorization</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">#</th>
+                    <th width="35%">Screen</th>
+                    <th width="15%">Admin</th>
+                    <th width="15%">Manager</th>
+                    <th width="15%">Staff</th>
+                    <th width="15%">Customer</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td>Home & Search Sites</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td>Registration</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td>Login</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td>Customer Profile</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td>Bookings & Subscriptions</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td>Parking & Transaction History</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">7</td>
+                    <td>Staff Dashboard (Check-in / Check-out)</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">8</td>
+                    <td>Vehicle Searching</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center"></td>
+                    <td>Staff Subscription Management</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center"></td>
+                    <td>Parking History Management</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center"></td>
+                    <td>Fee Estimation</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">9</td>
+                    <td>Manager Dashboard & Site Reports</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">10</td>
+                    <td>Manager Site</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">11</td>
+                    <td>Manager Staff</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">12</td>
+                    <td>Manager Transaction & Subscription</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">13</td>
+                    <td>Admin Dashboard & Global Reports</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">14</td>
+                    <td>Admin Site</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">15</td>
+                    <td>Admin Staff</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">16</td>
+                    <td>Admin Transaction & Subscription</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">17</td>
+                    <td>Logout</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <h2>3. System High Level Design</h2>
+
+        <div class="content-block">
+            <h3>3.1 Database Schema</h3>
+            <div class="image-box">
+                <a href="src-img/fig_2_erd.png" target="_blank">
+                    <img src="src-img/fig_2_erd.png" alt="Database Schema Diagram"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 3. Database Schema Diagram</p>
+            </div>
+        </div>
+
+        <h3>3.2 Table Descriptions</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="10%">No</th>
+                    <th width="30%">Table</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td><strong>Accounts</strong></td>
+                    <td style="text-align: justify;">Stores user login credentials, access roles (admin, staff,
+                        customer), and account status.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td><strong>Vehicle Types</strong></td>
+                    <td style="text-align: justify;">Manages supported vehicle categories (e.g., "car", "motorbike").
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td><strong>Parking Sites</strong></td>
+                    <td style="text-align: justify;">Stores information about physical parking facilities (Name,
+                        Address, Region, Operational State...).</td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td><strong>Employees</strong></td>
+                    <td style="text-align: justify;">Stores personal and contact information of staff and managers
+                        assigned to specific parking sites.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td><strong>Customers</strong></td>
+                    <td style="text-align: justify;">Stores profiles of users utilizing the parking services (Name,
+                        Phone, Email, Wallet Balance...).</td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td><strong>Parking Areas</strong></td>
+                    <td style="text-align: justify;">Manages specific parking zones within a site, defining vehicle type
+                        restrictions and slot capacity.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">7</td>
+                    <td><strong>Parking Cards</strong></td>
+                    <td style="text-align: justify;">Manages physical RFID cards used for vehicle identification during
+                        check-in and check-out.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">8</td>
+                    <td><strong>Price Configs</strong></td>
+                    <td style="text-align: justify;">Stores dynamic pricing rules and base rates based on site, vehicle
+                        type, and billing cycle.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">9</td>
+                    <td><strong>Subscriptions</strong></td>
+                    <td style="text-align: justify;">Manages long-term parking passes (monthly/yearly), including
+                        assigned vehicles and valid date ranges.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">10</td>
+                    <td><strong>Parking Sessions</strong></td>
+                    <td style="text-align: justify;">Records real-time vehicle entry and exit events, calculating actual
+                        parking duration and incurred fees.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">11</td>
+                    <td><strong>Bookings</strong></td>
+                    <td style="text-align: justify;">Stores advance parking reservations made by customers, including
+                        expected arrival/departure times.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">12</td>
+                    <td><strong>Payment Transactions</strong></td>
+                    <td style="text-align: justify;">Logs all financial records and collected revenues from parking
+                        sessions, bookings, and subscriptions.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <h2 class="section-header">II. Web Application</h2>
+        <p>This section provides detailed descriptions of the user interfaces and corresponding data fields for each
+            system screen.
+        </p>
+
+        <h3>2.1. Customer</h3>
+
+        <div class="content-block">
+            <h4>2.1.1. Customer logs in with their account</h4>
+            <div class="image-box">
+                <a href="src-img/fig_3_login.png" target="_blank">
+                    <img src="src-img/fig_3_login.png" alt="Customer Login Page" style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 4. Customer Login interface</p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="20%">Field Name</th>
+                        <th width="20%">Field Type</th>
+                        <th width="60%">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>User name</strong></td>
+                        <td class="text-center">Text Box</td>
+                        <td style="text-align: justify;">This is for customer to input user name for logging in</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Password</strong></td>
+                        <td class="text-center">Password Box</td>
+                        <td style="text-align: justify;">This is for customer to input password for logging in</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Login</strong></td>
+                        <td class="text-center">Button</td>
+                        <td style="text-align: justify;">Customer clicks to authenticate themselves into the system with
+                            provided email/user name & password</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-block">
+            <h4>2.1.2. Customer after logging in</h4>
+            <div class="image-box">
+                <a href="src-img/fig_4_home.png" target="_blank">
+                    <img src="src-img/fig_4_home.png" alt="Customer Home Page" style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 5. Customer Homepage after Login</p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="20%">Field Name</th>
+                        <th width="20%">Field Type</th>
+                        <th width="60%">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>ParkEasy/logo</strong></td>
+                        <td class="text-center">Logo/Link</td>
+                        <td style="text-align: justify;">Display the site logo, name and navigates to the homepage when
+                            clicked</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Home Page</strong></td>
+                        <td class="text-center">Navigation Link</td>
+                        <td style="text-align: justify;">Navigates to the homepage</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Booking</strong></td>
+                        <td class="text-center">Navigation Link</td>
+                        <td style="text-align: justify;">Navigates to the parking's sites page for booking</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Buying</strong></td>
+                        <td class="text-center">Navigation Link</td>
+                        <td style="text-align: justify;">Navigates to the parking's sites page for buying</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Avatar icon</strong></td>
+                        <td class="text-center">User Profile/Link</td>
+                        <td style="text-align: justify;">Displays the logged-in customer's username and opens a dropdown
+                            menu for profile/logout. Navigate to customer's profile when clicked</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-block">
+            <h4>2.1.3. Customer Profile</h4>
+            <div class="image-box">
+                <a href="src-img/fig_5_profile.png" target="_blank">
+                    <img src="src-img/fig_5_profile.png" alt="Customer Profile Page"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 6. Customer Profile Update interface
+                </p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="20%">Field Name</th>
+                        <th width="20%">Field Type</th>
+                        <th width="60%">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>firstname</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Customer's firstname</td>
+                    </tr>
+                    <tr>
+                        <td><strong>lastname</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Customer's lastname</td>
+                    </tr>
+                    <tr>
+                        <td><strong>email</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Customer's email</td>
+                    </tr>
+                    <tr>
+                        <td><strong>phone</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Customer's phone</td>
+                    </tr>
+                    <tr>
+                        <td><strong>errorName</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Error message displayed if name validation fails</td>
+                    </tr>
+                    <tr>
+                        <td><strong>errorPhone</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Error message displayed if phone validation fails</td>
+                    </tr>
+                    <tr>
+                        <td><strong>erroOldPass</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Error message displayed if the old password entered is
+                            incorrect
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>errorNewPass</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Error message displayed if the confirm password does not meet
+                            security requirements and not duplicate with the old password</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-break"></div>
+
+        <div class="content-block">
+            <h4>2.1.4. History Subscriptions</h4>
+            <div class="image-box">
+                <a href="src-img/fig_6_vehicle_session.png" target="_blank">
+                    <img src="src-img/fig_6_vehicle_session.png" alt="Vehicle & Session Details"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 7. Vehicle and Parking Session
+                    interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">Field Name</th>
+                    <th width="20%">Field Type</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>subscriptions</strong></td>
+                    <td class="text-center">List</td>
+                    <td style="text-align: justify;">Collection of the customer's subscription records.</td>
+                </tr>
+                <tr>
+                    <td><strong>subState</strong></td>
+                    <td class="text-center">Enum/String</td>
+                    <td style="text-align: justify;">The current state of the subscription ('active' or 'expired').
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>vehicleTypeId</strong></td>
+                    <td class="text-center">Integer</td>
+                    <td style="text-align: justify;">ID representing the vehicle category (e.g., 1 for Car, 2 for
+                        Motorbike).</td>
+                </tr>
+                <tr>
+                    <td><strong>actionType</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Hidden field defining the form operation: 'checkin' or 'checkout'.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>siteId</strong></td>
+                    <td class="text-center">Integer</td>
+                    <td style="text-align: justify;">The unique identifier of the parking site.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;"> The name of the parking site for the subscription.</td>
+                </tr>
+                <tr>
+                    <td><strong>licensePlate</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The license plate number registered for the subscription.</td>
+                </tr>
+                <tr>
+                    <td><strong>endDate</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">The expiration date of the current subscription.</td>
+                </tr>
+                <tr>
+                    <td><strong>dayRemain</strong></td>
+                    <td class="text-center">Integer</td>
+                    <td style="text-align: justify;">The number of days remaining until the subscription expires.</td>
+                </tr>
+                <tr>
+                    <td><strong>basePrice</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">The base price for 1 month, used dynamically in JS to calculate
+                        renewal plans.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <div class="content-block">
+            <h4>2.1.4. History Bookings</h4>
+            <div class="image-box">
+                <a href="src-img/fig_6_vehicle_booking.png" target="_blank">
+                    <img src="src-img/fig_6_vehicle_booking.png" alt="Vehicle & Session Details"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 8. Vehicle and Booking interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">Field Name</th>
+                    <th width="20%">Field Type</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>bookings</strong></td>
+                    <td class="text-center">List</td>
+                    <td style="text-align: justify;">Collection of the customer's bookings records.</td>
+                </tr>
+                <tr>
+                    <td><strong>bookingId</strong></td>
+                    <td class="text-center">Integer</td>
+                    <td style="text-align: justify;">The unique identifier for the booking transaction.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>siteName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The name of the parking site where the booking was made.</td>
+                </tr>
+                <tr>
+                    <td><strong>timeIn</strong></td>
+                    <td class="text-center">Date/Timestamp</td>
+                    <td style="text-align: justify;">The expected arrival time of the vehicle
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>bookingAmount</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">The total amount paid or to be paid for the booking.</td>
+                </tr>
+                <tr>
+                    <td><strong>state</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The current status of the booking (e.g., 'upcoming', 'completed').
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="page-break"></div>
+        <div class="content-block">
+            <h4>2.1.5.Booking Hourly Card</h4>
+            <div class="image-box">
+                <a href="src-img/fig_6_booking.png" target="_blank">
+                    <img src="src-img/fig_6_booking.png" alt="Booking" style="max-width: 100%; height: auto;">
+                </a>
+                <a href="src-img/fig_6_booking_detail.png" target="_blank">
+                    <img src="src-img/fig_6_booking_detail.png" alt="Booking-detail"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Booking</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">Field Name</th>
+                    <th width="20%">Field Type</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>siteName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The name of the parking facility displayed in the hero section.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>address</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The physical address of the site (also used for Google Maps
+                        embedding).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>vehicles</strong></td>
+                    <td class="text-center">List</td>
+                    <td style="text-align: justify;">A list of vehicle objects supported by the site (e.g., Car,
+                        Motorbike).</td>
+                </tr>
+                <tr>
+                    <td><strong>siteState</strong></td>
+                    <td class="text-center">Enum/String</td>
+                    <td style="text-align: justify;">Current operational status (e.g., OPERATING, MAINTENANCE).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>dateError</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Server-side validation message displayed if date selection is
+                        invalid.</td>
+                </tr>
+                <tr>
+                    <td><strong>dateIn</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">The scheduled arrival date (Format: yyyy-MM-dd).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>timeIn</strong></td>
+                    <td class="text-center">Time</td>
+                    <td style="text-align: justify;">The scheduled arrival time (Format: HH:mm).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>dateOut</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">The scheduled departure date.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>timeOut</strong></td>
+                    <td class="text-center">Time</td>
+                    <td style="text-align: justify;">The scheduled departure time.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>typeVehicle</strong></td>
+                    <td class="text-center">Intger</td>
+                    <td style="text-align: justify;">The unique identifier (vehicleTypeId) of the selected vehicle
+                        category.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>hour</strong></td>
+                    <td class="text-center">Intger</td>
+                    <td style="text-align: justify;">The calculated total duration in hours (computed via JavaScript).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>price</strong></td>
+                    <td class="text-center">Intger</td>
+                    <td style="text-align: justify;">The base hourly rate for the selected vehicle type.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>totalPrice</strong></td>
+                    <td class="text-center">Intger</td>
+                    <td style="text-align: justify;">The final calculated cost (hour × price).
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="page-break"></div>
+        <div class="content-block">
+            <h4>2.1.6.Buying Mothly Card (Subscriptions)</h4>
+            <div class="image-box">
+                <a href="src-img/fig_6_buying.png" target="_blank">
+                    <img src="src-img/fig_6_buying.png" alt="Buying" style="max-width: 100%; height: auto;">
+                </a>
+                <p>Buying</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">Field Name</th>
+                    <th width="20%">Field Type</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>siteName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The name of the parking facility displayed in the header and order
+                        summary.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>address</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The physical location of the site, used for the address label and
+                        the Google Maps iframe query.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>vehicles</strong></td>
+                    <td class="text-center">List</td>
+                    <td style="text-align: justify;">A list of vehicle objects supported by the site (e.g., Car,
+                        Motorbike).</td>
+                </tr>
+                <tr>
+                    <td><strong>siteId</strong></td>
+                    <td class="text-center">Integer</td>
+                    <td style="text-align: justify;">The unique identifier of the site, used as a hidden parameter for the payment API.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>planType</strong></td>
+                    <td class="text-center">Radio (String)</td>
+                    <td style="text-align: justify;">The subscription duration: month (1 month), quarter (3 months), or year (12 months).</td>
+                </tr>
+                <tr>
+                    <td><strong>licensePlate</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The vehicle's registration plate number, validated via Regex before submission.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>price-month/quarter/year</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">Display labels showing the calculated price per period (K VND) after applying discounts.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>summary-expiry</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">The calculated validity range (e.g., 17/03/2026 - 31/03/2026) based on the chosen plan.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>summary-subtotal</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">The raw total cost before any discounts are applied (BasePrice x Months)
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>summary-total</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">The final amount to be paid after applying the discount rate (10% for Quarter, 17% for Year).
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="page-break"></div>
+
+        <h3>2.2. Staff</h3>
+
+        <div class="content-block">
+            <h4>2.2.1. Staff Dashboard (Vehicle Check-in / Check-out)</h4>
+            <div class="image-box">
+                <a href="src-img/fig_7_staff_dashboard.png" target="_blank">
+                    <img src="src-img/fig_7_staff_dashboard.png" alt="Staff Dashboard"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 9. Check-in / Check-out Management
+                    interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">Field Name</th>
+                    <th width="20%">Field Type</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>cardId</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Unique identifier scanned from the physical RFID parking card.</td>
+                </tr>
+                <tr>
+                    <td><strong>licensePlate</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Alphanumeric license plate of the vehicle (requires validation).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>vehicleTypeId</strong></td>
+                    <td class="text-center">Integer</td>
+                    <td style="text-align: justify;">ID representing the vehicle category (e.g., 1 for Car, 2 for
+                        Motorbike).</td>
+                </tr>
+                <tr>
+                    <td><strong>actionType</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Hidden field defining the form operation: 'checkin' or 'checkout'.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>estimatedFeeInput</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">Hidden field storing the pre-calculated parking fee returned by the
+                        API.</td>
+                </tr>
+                <tr>
+                    <td><strong>timeIn</strong></td>
+                    <td class="text-center">Timestamp</td>
+                    <td style="text-align: justify;">Display-only field showing the exact time the vehicle entered the
+                        site.</td>
+                </tr>
+                <tr>
+                    <td><strong>duration</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Display-only field showing the total elapsed parking time.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.2.2. Vehicle Query / Search</h4>
+            <div class="image-box">
+                <a href="src-img/fig_8_1_vehicle_search.png" target="_blank">
+                    <img src="src-img/fig_8_1_vehicle_search.png" alt="Vehicle Search"
+                        style="max-width: 100%; height: auto;">
+                </a>
+
+                <p>Figure 10.1. Vehicle Lookup and Search
+                    interface</p>
+            </div>
+
+            <div class="image-box">
+                <a href="src-img/fig_8_2_vehicle_search.png" target="_blank">
+                    <img src="src-img/fig_8_2_vehicle_search.png" alt="Vehicle Search"
+                        style="max-width: 100%; height: auto;">
+                </a>
+
+                <p>Figure 10.2. Vehicle Lookup and Search
+                    interface</p>
+            </div>
+
+
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">Field Name</th>
+                    <th width="20%">Field Type</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>searchQuery</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Text input for searching by either license plate or parking card
+                        ID.</td>
+                </tr>
+                <tr>
+                    <td><strong>statusFilter</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Dropdown to filter parking sessions by status ('Active' or
+                        'Completed').</td>
+                </tr>
+                <tr>
+                    <td><strong>fromDate</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">Optional start date input for filtering parking records within a
+                        timeframe.</td>
+                </tr>
+                <tr>
+                    <td><strong>toDate</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">Optional end date input for filtering parking records.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <div class="content-block">
+            <h4>2.2.3. Subscription Management</h4>
+            <div class="image-box">
+                <a href="src-img/fig_9_staff_subscription.png" target="_blank">
+                    <img src="src-img/fig_9_staff_subscription.png" alt="Subscription Management"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 11. Monthly Subscription Management
+                    interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="20%">Field Name</th>
+                    <th width="20%">Field Type</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>phoneInput</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Customer's 10-digit phone number used for lookup via AJAX API.</td>
+                </tr>
+                <tr>
+                    <td><strong>customerName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Full name of the subscription holder (auto-filled if existing
+                        customer).</td>
+                </tr>
+                <tr>
+                    <td><strong>licensePlate</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The specific license plate bound to this monthly/quarterly
+                        subscription.</td>
+                </tr>
+                <tr>
+                    <td><strong>vehicleTypeId</strong></td>
+                    <td class="text-center">Integer</td>
+                    <td style="text-align: justify;">Category ID of the registered vehicle.</td>
+                </tr>
+                <tr>
+                    <td><strong>subType</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Subscription package selected by the customer (e.g., '1-month',
+                        '3-months').</td>
+                </tr>
+                <tr>
+                    <td><strong>startDate</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">The activation date of the parking pass.</td>
+                </tr>
+                <tr>
+                    <td><strong>endDate</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">The calculated expiration date of the pass (display only).</td>
+                </tr>
+                <tr>
+                    <td><strong>sumCardPrice</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">Total price of the selected subscription package to be collected.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.2.4. Local Parking History</h4>
+            <div class="image-box">
+                <a href="src-img/fig_10_parking_history.png" target="_blank">
+                    <img src="src-img/fig_10_parking_history.png" alt="Parking History"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 12. Parking Transaction History
+                    interface</p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="20%">Field Name</th>
+                        <th width="20%">Field Type</th>
+                        <th width="60%">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>dateFilter</strong></td>
+                        <td class="text-center">Date</td>
+                        <td style="text-align: justify;">Date picker to filter transaction logs by a specific working
+                            day.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>transactionId</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Unique reference number for the completed payment transaction.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>checkInTime</strong></td>
+                        <td class="text-center">Timestamp</td>
+                        <td style="text-align: justify;">Recorded entry time of the parked vehicle.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>checkOutTime</strong></td>
+                        <td class="text-center">Timestamp</td>
+                        <td style="text-align: justify;">Recorded exit time when the fee was collected.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>collectedFee</strong></td>
+                        <td class="text-center">Long</td>
+                        <td style="text-align: justify;">The final amount of money paid by the customer for the session.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="page-break"></div>
+
+        <h3>2.3. Manager</h3>
+
+        <div class="content-block">
+            <h4>2.3.1. Manager Dashboard</h4>
+            <div class="image-box">
+                <a href="src-img/fig_11_manager_dashboard.png" target="_blank">
+                    <img src="src-img/fig_11_manager_dashboard.png" alt="Manager Dashboard"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 13. Manager Dashboard interface</p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="25%">Field Name</th>
+                        <th width="25%">Field Type</th>
+                        <th width="50%">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>errorMessage</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">Displays system error messages if any occur.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>managerName</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">The name of the currently logged-in manager.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>mySite</strong></td>
+                        <td class="text-center">Object</td>
+                        <td style="text-align: justify;">The parking site entity assigned to this manager.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>mySite.siteName</strong></td>
+                        <td class="text-center">String</td>
+                        <td style="text-align: justify;">The name of the assigned parking site.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>totalParked</strong></td>
+                        <td class="text-center">Integer</td>
+                        <td style="text-align: justify;">Total number of vehicles currently parked at the site.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>todayRevenue</strong></td>
+                        <td class="text-center">Long</td>
+                        <td style="text-align: justify;">Total parking revenue generated today.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>activeSubs</strong></td>
+                        <td class="text-center">Integer</td>
+                        <td style="text-align: justify;">Total number of active monthly subscriptions.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>todayBookings</strong></td>
+                        <td class="text-center">Integer</td>
+                        <td style="text-align: justify;">Total number of reservations/bookings for today.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>chartLabels</strong></td>
+                        <td class="text-center">JSON Array (String)</td>
+                        <td style="text-align: justify;">X-axis labels (e.g., dates) for the 7-day revenue chart.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>chartData</strong></td>
+                        <td class="text-center">JSON Array (Numeric)</td>
+                        <td style="text-align: justify;">Y-axis values (revenue amounts) for the 7-day revenue chart.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-block">
+            <h4>2.3.2. Site Detail</h4>
+            <div class="image-box">
+                <a href="src-img/fig_12.1_manager_site.png" target="_blank">
+                    <img src="src-img/fig_12.1_manager_site.png" alt="Manager Site Detail"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 14.1 Site Detail interface</p>
+            </div>
+            <div class="image-box">
+                <a href="src-img/fig_12.2_manager_site.png" target="_blank">
+                    <img src="src-img/fig_12.2_manager_site.png" alt="Manager Site Detail"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 14.2 Site Detail interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>parkingSite.siteName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The name of the parking site.</td>
+                </tr>
+                <tr>
+                    <td><strong>parkingSite.address</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The physical address of the parking site.</td>
+                </tr>
+                <tr>
+                    <td><strong>parkingSite.region</strong></td>
+                    <td class="text-center">Enum / String</td>
+                    <td style="text-align: justify;">The region or district where the site is located.</td>
+                </tr>
+                <tr>
+                    <td><strong>parkingSite.siteState</strong></td>
+                    <td class="text-center">Enum / String</td>
+                    <td style="text-align: justify;">The current operational state of the site (e.g., Active).</td>
+                </tr>
+                <tr>
+                    <td><strong>formData.regions</strong></td>
+                    <td class="text-center">List&lt;Enum&gt;</td>
+                    <td style="text-align: justify;">List of all available regions for mapping the display label.</td>
+                </tr>
+                <tr>
+                    <td><strong>formData.states</strong></td>
+                    <td class="text-center">List&lt;Enum&gt;</td>
+                    <td style="text-align: justify;">List of all available site states for mapping the display label.
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>formData.vehicles</strong></td>
+                    <td class="text-center">List&lt;Object&gt;</td>
+                    <td style="text-align: justify;">Master list of all vehicle types.</td>
+                </tr>
+                <tr>
+                    <td><strong>vehicleConfigDTOs</strong></td>
+                    <td class="text-center">List&lt;Object&gt;</td>
+                    <td style="text-align: justify;">List of configurations (capacity, price) specific to the site.</td>
+                </tr>
+                <tr>
+                    <td><strong>config.vehicleTypeId</strong></td>
+                    <td class="text-center">Integer / String</td>
+                    <td style="text-align: justify;">Identifier matching the specific vehicle type.</td>
+                </tr>
+                <tr>
+                    <td><strong>config.capacity</strong></td>
+                    <td class="text-center">Integer</td>
+                    <td style="text-align: justify;">Maximum parking capacity for the specific vehicle type.</td>
+                </tr>
+                <tr>
+                    <td><strong>config.hourlyPrice</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">Price per hour for parking this vehicle type.</td>
+                </tr>
+                <tr>
+                    <td><strong>config.monthlyPrice</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">Price per month for subscribing this vehicle type.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <div class="content-block">
+            <h4>2.3.3. List Employee</h4>
+            <div class="image-box">
+                <a href="src-img/fig_13_manager_employees.png" target="_blank">
+                    <img src="src-img/fig_13_manager_employees.png" alt="Manager Employee List"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 15. Employee List interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>siteName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The name of the site where the employees work.</td>
+                </tr>
+                <tr>
+                    <td><strong>param.search</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Search keyword entered by the manager (name, phone, etc.).</td>
+                </tr>
+                <tr>
+                    <td><strong>listEmployees</strong></td>
+                    <td class="text-center">List&lt;Employee&gt;</td>
+                    <td style="text-align: justify;">Collection of employee records working at the site.</td>
+                </tr>
+                <tr>
+                    <td><strong>emp.firstName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The first name of the employee.</td>
+                </tr>
+                <tr>
+                    <td><strong>emp.lastName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The last name of the employee.</td>
+                </tr>
+                <tr>
+                    <td><strong>emp.phone</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The contact phone number of the employee.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.3.4. Subscription</h4>
+            <div class="image-box">
+                <a href="src-img/fig_14_manager_subscription.png" target="_blank">
+                    <img src="src-img/fig_14_manager_subscription.png" alt="Manager Subscription Management"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 16. Subscription Management
+                    interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>param.search</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Search keyword (transaction code, customer name, license plate).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>param.status</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Filter parameter for subscription status.</td>
+                </tr>
+                <tr>
+                    <td><strong>param.type</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Filter parameter for vehicle type.</td>
+                </tr>
+                <tr>
+                    <td><strong>listTransactions</strong></td>
+                    <td class="text-center">List&lt;Object&gt;</td>
+                    <td style="text-align: justify;">Collection of subscription transaction records.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.transactionCode</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Unique code identifying the subscription transaction.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.customerName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Full name of the subscribed customer.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.avatarInitials</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Initials extracted from customer's name for avatar display.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.licensePlate</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">License plate number of the registered vehicle.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.vehicleType</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Type of vehicle (e.g., car, motorbike).</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.startDate</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">The start date of the subscription validity.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.endDate</strong></td>
+                    <td class="text-center">Date</td>
+                    <td style="text-align: justify;">The expiration date of the subscription validity.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.totalAmount</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">Total monetary amount paid for the subscription.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.status</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Current status of the subscription (completed, accepted, failed).
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.3.5. Transaction History</h4>
+            <div class="image-box">
+                <a href="src-img/fig_15_manager_transactions.png" target="_blank">
+                    <img src="src-img/fig_15_manager_transactions.png" alt="Manager Transaction History"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 17. Transaction History interface
+                </p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>param.search</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Search keyword (transaction code or customer name).</td>
+                </tr>
+                <tr>
+                    <td><strong>param.serviceType</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Filter parameter for the type of service (casual vs subscription).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>param.status</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Filter parameter for transaction status.</td>
+                </tr>
+                <tr>
+                    <td><strong>listTransactions</strong></td>
+                    <td class="text-center">List&lt;Object&gt;</td>
+                    <td style="text-align: justify;">Collection of payment transaction records.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.transactionCode</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Unique transaction identifier.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.avatarInitials</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Initials extracted from customer's name for avatar display.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.customerName</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Name of the customer who made the payment.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.serviceType</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The type of parking service purchased.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.amount</strong></td>
+                    <td class="text-center">Long</td>
+                    <td style="text-align: justify;">Total amount of the transaction.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.paymentMethod</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">The method used for payment (e.g., cash, banking).</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.paymentTime</strong></td>
+                    <td class="text-center">Date / Timestamp</td>
+                    <td style="text-align: justify;">The exact date and time the payment occurred.</td>
+                </tr>
+                <tr>
+                    <td><strong>tx.status</strong></td>
+                    <td class="text-center">String</td>
+                    <td style="text-align: justify;">Status of the transaction (completed, accepted, failed).</td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <div class="page-break"></div>
+
+        <h3>2.4. Admin</h3>
+
+        <div class="content-block">
+            <h4>2.4.1. Admin Dashboard</h4>
+            <div class="image-box">
+                <a href="src-img/fig_16_admin_dashboard.png" target="_blank">
+                    <img src="src-img/fig_16_admin_dashboard.png" alt="Admin Dashboard"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 18. Admin Dashboard interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>siteId</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Used to filter chart and statistical data by "All" or a specific
+                        active parking site.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.4.2. List Sites</h4>
+            <div class="image-box">
+                <a href="src-img/fig_17_admin_sites.png" target="_blank">
+                    <img src="src-img/fig_17_admin_sites.png" alt="Admin List Sites"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 19. Parking Site List interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>siteSearchQuery</strong></td>
+                    <td class="text-center">Text Input</td>
+                    <td style="text-align: justify;">Search box for parking sites based on the site name or physical
+                        address.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.4.3. Add Site</h4>
+            <div class="image-box">
+                <a href="src-img/fig_18_admin_add_site.png" target="_blank">
+                    <img src="src-img/fig_18_admin_add_site.png" alt="Admin Add Site"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 20. Add New Parking Site interface
+                </p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>siteName</strong></td>
+                    <td class="text-center">Text Input (Required)</td>
+                    <td style="text-align: justify;">The name of the parking site (e.g., ParkEasy District 1).</td>
+                </tr>
+                <tr>
+                    <td><strong>siteAddress</strong></td>
+                    <td class="text-center">Text Input (Required)</td>
+                    <td style="text-align: justify;">The detailed physical address of the parking facility.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteRegion</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">The geographical region of the site (e.g., North, Middle, South).
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>siteState</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">The initial operational status when creating the site (Operating,
+                        Maintenance, Closed).</td>
+                </tr>
+                <tr>
+                    <td><strong>vehicleType</strong></td>
+                    <td class="text-center">Dropdown (Array)</td>
+                    <td style="text-align: justify;">Selection of supported vehicle types in the site (Car, Motorbike,
+                        etc.).</td>
+                </tr>
+                <tr>
+                    <td><strong>capacity</strong></td>
+                    <td class="text-center">Number Input (Array)</td>
+                    <td style="text-align: justify;">The maximum quantity/capacity (Slots) for the corresponding vehicle
+                        type.</td>
+                </tr>
+                <tr>
+                    <td><strong>hourlyPrice</strong></td>
+                    <td class="text-center">Text Input (Array)</td>
+                    <td style="text-align: justify;">Sets the hourly parking fee (VND).</td>
+                </tr>
+                <tr>
+                    <td><strong>monthlyPrice</strong></td>
+                    <td class="text-center">Text Input (Array)</td>
+                    <td style="text-align: justify;">Sets the monthly subscription fee (VND).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <div class="content-block">
+            <h4>2.4.4. Site Detail, Update, Price Config, Delete Site</h4>
+            <div class="image-box">
+                <a href="src-img/fig_19.1_admin_update_site.png" target="_blank">
+                    <img src="src-img/fig_19.1_admin_update_site.png" alt="Admin Update/Config Site"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 21.1 Update and Configure Parking
+                    Site interface</p>
+            </div>
+            <div class="image-box">
+                <a href="src-img/fig_19.2_admin_update_site.png" target="_blank">
+                    <img src="src-img/fig_19.2_admin_update_site.png" alt="Admin Update/Config Site"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 21.2 Update and Configure Parking
+                    Site interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>siteName</strong></td>
+                    <td class="text-center">Text Input</td>
+                    <td style="text-align: justify;">Updates the name of the parking site.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteAddress</strong></td>
+                    <td class="text-center">Text Input</td>
+                    <td style="text-align: justify;">Updates the detailed address of the parking site.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteRegion</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Updates the affiliated geographical region.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteManager</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Assigns a specific employee to manage this site directly.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteState</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Updates the operational status of the site.</td>
+                </tr>
+                <tr>
+                    <td><strong>cardQuantity</strong></td>
+                    <td class="text-center">Number Input</td>
+                    <td style="text-align: justify;">Enter the number of physical parking cards to be additionally
+                        issued for this site.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteId (Hidden)</strong></td>
+                    <td class="text-center">Hidden Input</td>
+                    <td style="text-align: justify;">The identification ID of the parking site (used behind the scenes
+                        for adding cards or deleting the site).</td>
+                </tr>
+                <tr>
+                    <td><strong>vehicleType</strong></td>
+                    <td class="text-center">Dropdown (Array)</td>
+                    <td style="text-align: justify;">List of vehicle types to configure or update.</td>
+                </tr>
+                <tr>
+                    <td><strong>capacity</strong></td>
+                    <td class="text-center">Number Input (Array)</td>
+                    <td style="text-align: justify;">Updates the maximum capacity for the specified vehicle type.</td>
+                </tr>
+                <tr>
+                    <td><strong>hourlyPrice</strong></td>
+                    <td class="text-center">Text Input (Array)</td>
+                    <td style="text-align: justify;">Updates the hourly parking price.</td>
+                </tr>
+                <tr>
+                    <td><strong>monthlyPrice</strong></td>
+                    <td class="text-center">Text Input (Array)</td>
+                    <td style="text-align: justify;">Updates the monthly subscription price.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.4.5. List Employees</h4>
+            <div class="image-box">
+                <a href="src-img/fig_20_admin_employees.png" target="_blank">
+                    <img src="src-img/fig_20_admin_employees.png" alt="Admin Employee List"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 22. Employee Management interface
+                </p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>employeeSearch</strong></td>
+                    <td class="text-center">Text Input</td>
+                    <td style="text-align: justify;">Search box by employee name or identification code.</td>
+                </tr>
+                <tr>
+                    <td><strong>roleFilter</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Filters the employee list by role (All, Admin, Manager, Staff).
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.4.6. Add Employee</h4>
+            <div class="image-box">
+                <a href="src-img/fig_21_admin_add_employee.png" target="_blank">
+                    <img src="src-img/fig_21_admin_add_employee.png" alt="Admin Add Employee"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 23. Add New Employee interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>lastName</strong></td>
+                    <td class="text-center">Text Input (Required)</td>
+                    <td style="text-align: justify;">The last name and middle name of the employee.</td>
+                </tr>
+                <tr>
+                    <td><strong>firstName</strong></td>
+                    <td class="text-center">Text Input (Required)</td>
+                    <td style="text-align: justify;">The first name of the employee.</td>
+                </tr>
+                <tr>
+                    <td><strong>phone</strong></td>
+                    <td class="text-center">Tel Input (Required)</td>
+                    <td style="text-align: justify;">The phone number used for contact and as the login account.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteId</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Selects the specific parking site the employee is assigned to work
+                        at (or "No site").</td>
+                </tr>
+                <tr>
+                    <td><strong>password</strong></td>
+                    <td class="text-center">Password (Required)</td>
+                    <td style="text-align: justify;">The password to access the system.</td>
+                </tr>
+                <tr>
+                    <td><strong>confirmPassword</strong></td>
+                    <td class="text-center">Password (Required)</td>
+                    <td style="text-align: justify;">Re-enter the password for verification.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <div class="content-block">
+            <h4>2.4.7. Update, Delete Employee</h4>
+            <div class="image-box">
+                <a href="src-img/fig_22_admin_update_employee.png" target="_blank">
+                    <img src="src-img/fig_22_admin_update_employee.png" alt="Admin Update/Delete Employee"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 24. Update/Delete Employee interface
+                </p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>employeeId (Hidden)</strong></td>
+                    <td class="text-center">Hidden Input</td>
+                    <td style="text-align: justify;">The identification ID of the employee (not displayed on the UI,
+                        used when submitting the update form or deleting the account).</td>
+                </tr>
+                <tr>
+                    <td><strong>lastName</strong></td>
+                    <td class="text-center">Text Input (Required)</td>
+                    <td style="text-align: justify;">Updates the last name and middle name.</td>
+                </tr>
+                <tr>
+                    <td><strong>firstName</strong></td>
+                    <td class="text-center">Text Input (Required)</td>
+                    <td style="text-align: justify;">Updates the first name.</td>
+                </tr>
+                <tr>
+                    <td><strong>phone</strong></td>
+                    <td class="text-center">Tel Input (Required)</td>
+                    <td style="text-align: justify;">Updates the contact phone number.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteId</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Transfers this employee to manage or work at another parking site.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.4.8. Subscription</h4>
+            <div class="image-box">
+                <a href="src-img/fig_23_admin_subscription.png" target="_blank">
+                    <img src="src-img/fig_23_admin_subscription.png" alt="Admin Global Subscription Management"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 25. System-wide Subscription
+                    Management interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>searchQuery</strong></td>
+                    <td class="text-center">Text Input</td>
+                    <td style="text-align: justify;">Search box to find subscriptions by license plate, customer name,
+                        or phone number.</td>
+                </tr>
+                <tr>
+                    <td><strong>siteFilter</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Filters the subscription list by a specific parking site.</td>
+                </tr>
+                <tr>
+                    <td><strong>statusFilter</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Filters subscriptions by their current status (e.g., Active,
+                        Expired, Pending).</td>
+                </tr>
+                <tr>
+                    <td><strong>vehicleTypeFilter</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Filters the list by vehicle type (Car, Motorbike).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="content-block">
+            <h4>2.4.9. Transaction History</h4>
+            <div class="image-box">
+                <a href="src-img/fig_24_admin_transactions.png" target="_blank">
+                    <img src="src-img/fig_24_admin_transactions.png" alt="Admin Global Transaction History"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 26. System-wide Transaction History
+                    interface</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Field Name</th>
+                    <th width="25%">Field Type</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>transactionSearch</strong></td>
+                    <td class="text-center">Text Input</td>
+                    <td style="text-align: justify;">Search box to lookup specific transactions using Transaction ID or
+                        Customer Phone.</td>
+                </tr>
+                <tr>
+                    <td><strong>dateRangeFilter</strong></td>
+                    <td class="text-center">Date Range Picker</td>
+                    <td style="text-align: justify;">Filters the transaction list within a specific start date and end
+                        date.</td>
+                </tr>
+                <tr>
+                    <td><strong>transactionType</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Filters records by payment type (Wallet Top-up, Subscription
+                        Purchase, Booking Deposit, Casual Parking Fee).</td>
+                </tr>
+                <tr>
+                    <td><strong>paymentStatus</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Filters the transactions by their completion status (Success,
+                        Failed, Pending).</td>
+                </tr>
+                <tr>
+                    <td><strong>siteFilter</strong></td>
+                    <td class="text-center">Dropdown (Select)</td>
+                    <td style="text-align: justify;">Filters transactions that occurred at a specific parking site
+                        (useful for revenue allocation).</td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <div class="page-break"></div>
+
+        <h2 class="section-header">III. Students Contribution</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th width="15%">Student Number</th>
+                    <th width="25%">Full Name</th>
+                    <th width="45%">Works</th>
+                    <th width="15%">Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center"><strong>HE200115</strong></td>
+                    <td>Nguyễn Thành Đạt</td>
+                    <td>Code Admin, Manager business logic</td>
+                    <td class="text-center">34%</td>
+                </tr>
+                <tr>
+                    <td class="text-center"><strong>HE201167</strong></td>
+                    <td>Nguyễn Minh Hiếu</td>
+                    <td>Code Customer business logic</td>
+                    <td class="text-center">33%</td>
+                </tr>
+                <tr>
+                    <td class="text-center"><strong>HE200247</strong></td>
+                    <td>Nguyễn Nhật Minh</td>
+                    <td>Code Staff business logic</td>
+                    <td class="text-center">33%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 class="section-header">IV. Appendix</h2>
+
+        <h3>4.1. Assumptions & Dependencies</h3>
+        <ul>
+            <li style="margin-bottom: 8px; text-align: justify;"><strong>AS-1:</strong> The operational system for Staff
+                and Admin/Manager will be used within the organization's internal network for security, while Customers
+                can access the booking system via the Internet.</li>
+            <li style="margin-bottom: 8px; text-align: justify;"><strong>DE-1:</strong> Users have basic knowledge of
+                using standard web browsers.</li>
+        </ul>
+
+        <h3>4.2. Limitations & Exclusions</h3>
+        <ul>
+            <li style="margin-bottom: 8px; text-align: justify;"><strong>L-E:</strong> The system will not natively
+                support mobile platforms (no dedicated mobile app) in the current version.</li>
+        </ul>
+
+        <h3>4.3. Business Rules</h3>
+        <ul>
+            <li style="margin-bottom: 8px; text-align: justify;"><strong>BR-1:</strong> Default admin account: MemberID
+                is "admin" and password is "admin".</li>
+            <li style="margin-bottom: 8px; text-align: justify;"><strong>BR-2:</strong> Default manager account:
+                MemberID is "staff3" and password is "123".</li>
+            <li style="margin-bottom: 8px; text-align: justify;"><strong>BR-3:</strong> Default staff account: MemberID
+                is "staff2" and password is "123".</li>
+            <li style="margin-bottom: 8px; text-align: justify;"><strong>BR-4:</strong> Default customer account:
+                MemberID is "customer1" and password is "123".</li>
+        </ul>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // 1. Tạo container cho Sidebar (Floating TOC)
+            const sidebar = document.createElement('nav');
+            sidebar.id = 'floating-toc';
+            sidebar.innerHTML = '<h5>In this report</h5>';
+            const sidebarList = document.createElement('ul');
+            sidebar.appendChild(sidebarList);
+            document.body.appendChild(sidebar);
+
+            const tocContainer = document.getElementById('toc');
+            const headings = document.querySelectorAll('h2:not(.no-toc), h3:not(.no-toc), h4:not(.no-toc)');
+            const pageTocList = document.createElement('ul');
+
+            headings.forEach((heading, index) => {
+                // Bỏ qua tiêu đề "Table of Content" và các tiêu đề trong trang bìa/mục lục
+                const titleText = heading.innerText.trim();
+                if (titleText === "Table of Content" || heading.closest('.full-page-section')) {
+                    return;
+                }
+
+                const level = heading.tagName.toLowerCase(); // h2, h3, h4
+                const id = 'section-' + index;
+                heading.id = id;
+
+                // TẠO MỤC LỤC CHO TRANG GIẤY (Trang 2)
+                if (tocContainer) {
+                    const li = document.createElement('li');
+                    li.className = 'toc-' + level;
+
+                    const a = document.createElement('a');
+                    a.href = '#' + id;
+
+                    // Nếu là H2 thì cho đậm lên (đồng bộ report)
+                    if (level === 'h2') {
+                        const strong = document.createElement('strong');
+                        strong.textContent = titleText;
+                        a.appendChild(strong);
+                    } else {
+                        a.textContent = titleText;
+                    }
+
+                    li.appendChild(a);
+                    pageTocList.appendChild(li);
+                }
+
+                // TẠO MỤC LỤC CHO SIDEBAR (Web view)
+                const sLi = document.createElement('li');
+                sLi.className = 'toc-' + level;
+                const sA = document.createElement('a');
+                sA.href = '#' + id;
+                sA.textContent = titleText;
+                sLi.appendChild(sA);
+                sidebarList.appendChild(sLi);
+            });
+
+            if (tocContainer) {
+                tocContainer.innerHTML = ''; // Clear loading state
+                tocContainer.appendChild(pageTocList);
+            }
+        });
+    </script>
+</body>
+
+</html>

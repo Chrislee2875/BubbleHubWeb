@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/images/products/ca-phe-cappuccino.jpg</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/images/products/ca-phe-den-da.jpg</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/admin/orderDetail.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/login.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/src/java/bubblehub/controller/LoginController.java</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/index.html</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/cart.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/admin/productForm.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/admin/categories.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/css/style.css</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/src/java/bubblehub/controller/admin/AdminCategoryController.java</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/src/java/bubblehub/controller/CheckoutController.java</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/admin/dashboard.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/admin/products.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/admin/users.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/common/header.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/WEB-INF/web.xml</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/common/footer.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/orderHistory.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/src/java/bubblehub/dao/CategoryDAO.java</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/index.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/admin/orders.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/web/jsp/menu.jsp</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/src/java/bubblehub/controller/LogoutController.java</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/src/java/bubblehub/controller/CartController.java</file>
+            <file>file:/C:/Users/gemma/Desktop/CHRISLEE/PRJ/prj301-26sp-se1914-02/BubbleHubWeb/src/java/bubblehub/controller/RepayController.java</file>
+        </group>
+    </open-files>
+</project-private>

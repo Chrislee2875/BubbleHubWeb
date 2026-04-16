@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRJ301 Report- Group 2 [code_101]</title>
+    <style>
+        
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        
+        @page {
+            size: A4 portrait;
+            margin: 20mm;
+            
+        }
+
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            color: #000000;
+            background-color: #e0e0e0;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background-color: #ffffff;
+            margin: 0 auto;
+            padding: 20mm;
+            
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        
+        p {
+            text-align: justify;
+            
+            margin-bottom: 12px;
+        }
+
+        
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+
+            .a4-page {
+                width: 100%;
+                min-height: auto;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+
+            
+            h2,
+            h3,
+            h4 {
+                page-break-after: avoid;
+                break-after: avoid;
+                page-break-inside: avoid;
+            }
+
+            
+            h2+table,
+            h3+table,
+            h4+table,
+            h2+.image-box,
+            h3+.image-box,
+            h4+.image-box {
+                page-break-before: avoid;
+                break-before: avoid;
+            }
+
+            
+            .content-block {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 20px;
+            }
+
+            
+            table {
+                page-break-inside: auto;
+                break-inside: auto;
+            }
+
+            tr,
+            td,
+            th {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            
+            .page-break {
+                page-break-after: always !important;
+                break-after: page !important;
+                clear: both;
+            }
+
+            .section-header {
+                page-break-before: always;
+                break-before: page;
+            }
+
+            
+            .image-box {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            
+            p {
+                orphans: 3;
+                widows: 3;
+            }
+        }
+
+        
+        .page-break {
+            page-break-after: always !important;
+            break-after: page !important;
+        }
+
+        .page-break-before {
+            page-break-before: always !important;
+            break-before: page !important;
+        }
+
+        
+        .full-page-section {
+            min-height: 250mm;
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            
+        }
+
+        
+.image-box {
+    border: none;
+    background-color: #f4f7f9;
+    text-align: center;
+    padding: 20px;
+    margin: 20px 0;
+    color: #555;
+    
+    
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+
+.image-box img {
+    
+    max-width: 100% !important; 
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+    
+    
+    image-rendering: -webkit-optimize-contrast;
+}
+
+.image-box p {
+    font-size: 11pt;
+    color: #3a3a3a;
+    text-align: center;
+    margin-top: 15px; 
+    font-style: italic;
+    line-height: 1.3;
+}
+
+
+@media print {
+    
+    .image-box {
+        background-color: transparent !important;
+        padding: 10px 0;
+    }
+    
+    
+    .image-box img {
+        max-width: 100% !important;
+        
+        transform: scale(1); 
+    }
+    
+    
+    h2 + .image-box, 
+    h3 + .image-box, 
+    h4 + .image-box {
+        page-break-before: avoid;
+    }
+}
+
+        
+        #toc ul {
+            list-style-type: none;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        #toc>ul {
+            padding-left: 0;
+        }
+
+        #toc li {
+            margin-bottom: 8px;
+        }
+
+        #toc .toc-h4 {
+            font-size: 12pt;
+            margin-left: 30px;
+            color: #555;
+        }
+
+        #toc li strong {
+            color: #003366;
+        }
+
+        #toc a {
+            text-decoration: none;
+            color: #003366;
+            
+        }
+
+        #toc a:hover {
+            text-decoration: underline;
+            color: #d32f2f;
+            
+        }
+
+        
+        #floating-toc {
+            position: fixed;
+            top: 50px;
+            left: 20px;
+            width: 280px;
+            max-height: 80vh;
+            background-color: #ffffff;
+            border-right: 4px solid #003366;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        #floating-toc h5 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 14pt;
+            color: #003366;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        #floating-toc ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        #floating-toc li {
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        #floating-toc a {
+            text-decoration: none;
+            color: #444;
+            font-size: 10pt;
+            display: block;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        #floating-toc a:hover {
+            background-color: #f0f4f8;
+            color: #003366;
+        }
+
+        #floating-toc .toc-h2 {
+            font-weight: bold;
+            color: #003366;
+            margin-top: 10px;
+        }
+
+        #floating-toc .toc-h3 {
+            padding-left: 15px;
+        }
+
+        #floating-toc .toc-h4 {
+            padding-left: 30px;
+            color: #777;
+            font-style: italic;
+        }
+
+        
+        @media print {
+            #floating-toc {
+                display: none !important;
+            }
+        }
+
+        
+        h1 {
+            font-size: 18pt;
+            color: #003366;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 16pt;
+            color: #003366;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 5px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 14pt;
+            color: #000000;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        h4 {
+            font-size: 12pt;
+            color: #434343;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #000000;
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+            color: #003366;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        
+        ul,
+        ol {
+            margin-bottom: 15px;
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f8f8f8;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 11pt;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="a4-page">
+        
+        <div class="page-break full-page-section" style="text-align: center;">
+            <div style="margin-bottom: 20mm;">
+                <a href="https://daihoc.fpt.edu.vn/" target="_blank">
+                    <img src="https://daihoc.fpt.edu.vn/wp-content/themes/fpt-university/assets/images/logo.png"
+                        alt="FPT Logo" style="width: 300px; margin-bottom: 20px;">
+                </a>
+                <h1 style="font-size: 22pt; margin-top: 40px;">PRJ301 Report</h1>
+
+            </div>
+            <div>
+                <h2 style="border: none; margin-top: 10px; font-size: 18pt; text-align: center;">
+                    Bubble Hub - Milk Tea Shop Management System
+                </h2>
+                <p style="text-align: center;"><strong>Version:</strong> 1.0</p>
+
+            </div>
+
+            <div style="font-size: 14pt;">
+                <p style="text-align: center;"><strong>Group:</strong> 2 [code_101] - SE1914</p>
+                <div style="display: inline-block; text-align: left; margin-top: 20px;">
+                    <p style="margin: 5px 0;"><strong>Members:</strong></p>
+                    <p style="margin: 5px 0;">SE193900 – Nguyễn Xuân Quang</p>
+                    <p style="margin: 5px 0;">SE196220 – Trần Thường Quang</p>
+                    <p style="margin: 5px 0;">SE193083 – Nguyễn Lê Hữu Trí</p>
+                </div>
+            </div>
+        </div>
+
+
+        
+        <div class="page-break full-page-section">
+            <h2>Table of Content</h2>
+            <div id="toc"></div>
+        </div>
+
+        
+        <h2 class="section-header">I. Overview</h2>
+        <p>
+            Bubble Hub is a web-based milk tea ordering and management platform. It allows users to browse menu items,
+            search and filter by category, customize drinks, manage cart items, and place orders through an online flow.
+        </p>
+        <p>
+            Customers can complete payment via VNPAY, track order history/detail, and update their profile. Admin users
+            manage products, categories, orders, and users through a dedicated administration area with KPI dashboard.
+        </p>
+
+        <p>
+            The project is developed with Java Servlet, JSP, JSTL, and JDBC on SQL Server, following MVC2 architecture
+            using MainController action dispatching for consistent routing.
+        </p>
+
+        
+        <h2>1. User Requirements</h2>
+
+        <h3>1.1 Actors</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">No</th>
+                    <th width="15%">Actor</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td><strong>Guest</strong></td>
+                    <td style="text-align: justify;">Can browse menu, view product detail, search/filter products, and register account.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td><strong>Customer</strong></td>
+                    <td style="text-align: justify;">Can login, customize drinks (sugar/ice), choose toppings, manage cart, checkout/payment, view orders, and update profile/password.</td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td><strong>Admin</strong></td>
+                    <td style="text-align: justify;">Can manage products, categories, users, orders, and monitor business metrics on dashboard.</td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <h3>1.2 Use Cases</h3>
+        <p><strong>Descriptions</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">ID</th>
+                    <th width="15%">Feature</th>
+                    <th width="25%">Use Case</th>
+                    <th width="55%">Use Case Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="text-center">1</td><td rowspan="3" style="vertical-align: middle;"><strong>Guest</strong></td><td>Browse Menu</td><td style="text-align: justify;">View available drinks and toppings on menu page.</td></tr>
+                <tr><td class="text-center">2</td><td>Search / Filter Products</td><td style="text-align: justify;">Search by keyword and filter products by category.</td></tr>
+                <tr><td class="text-center">3</td><td>Register Account</td><td style="text-align: justify;">Create a new customer account for ordering flow.</td></tr>
+
+                <tr><td class="text-center">4</td><td rowspan="7" style="vertical-align: middle;"><strong>Customer</strong></td><td>Login / Logout</td><td style="text-align: justify;">Authenticate and maintain shopping session.</td></tr>
+                <tr><td class="text-center">5</td><td>View Product Detail</td><td style="text-align: justify;">Inspect item information, price, and customization options.</td></tr>
+                <tr><td class="text-center">6</td><td>Add Drink to Cart</td><td style="text-align: justify;">Add item with sugar/ice levels and quantity.</td></tr>
+                <tr><td class="text-center">7</td><td>Select Toppings</td><td style="text-align: justify;">Attach topping lines to a selected drink item.</td></tr>
+                <tr><td class="text-center">8</td><td>Manage Cart</td><td style="text-align: justify;">Update quantity, remove lines, clear cart, and check total.</td></tr>
+                <tr><td class="text-center">9</td><td>Checkout & Payment</td><td style="text-align: justify;">Confirm order and pay through VNPAY.</td></tr>
+                <tr><td class="text-center">10</td><td>Track Orders & Profile</td><td style="text-align: justify;">View order history/detail, repay pending orders, update profile and password.</td></tr>
+
+                <tr><td class="text-center">11</td><td rowspan="5" style="vertical-align: middle;"><strong>Admin</strong></td><td>View Dashboard</td><td style="text-align: justify;">Monitor revenue, order states, total products and total users.</td></tr>
+                <tr><td class="text-center">12</td><td>Manage Products</td><td style="text-align: justify;">Add/edit/toggle/delete products and search catalog.</td></tr>
+                <tr><td class="text-center">13</td><td>Manage Categories</td><td style="text-align: justify;">Add/edit/delete categories for menu organization.</td></tr>
+                <tr><td class="text-center">14</td><td>Manage Orders</td><td style="text-align: justify;">Filter by status, inspect details, and update order status.</td></tr>
+                <tr><td class="text-center">15</td><td>Manage Users</td><td style="text-align: justify;">Search users, toggle account status, and delete users.</td></tr>
+            </tbody>
+        </table>
+
+        
+        <h2>2. Overall Functionalities</h2>
+        <h3>2.1 Screen Descriptions</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">#</th>
+                    <th width="20%">Feature</th>
+                    <th width="25%">Screen</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="text-center">1</td><td><strong>Registration</strong></td><td>register.jsp</td><td style="text-align: justify;">Guest creates a customer account using name, email, password, and confirm password.</td></tr>
+                <tr><td class="text-center">2</td><td><strong>Login</strong></td><td>login.jsp</td><td style="text-align: justify;">User authenticates using email/password before ordering features.</td></tr>
+                <tr><td class="text-center">3</td><td><strong>Menu Browsing</strong></td><td>menu.jsp</td><td style="text-align: justify;">View products by category, search keyword, and open detail pages.</td></tr>
+                <tr><td class="text-center">4</td><td><strong>Product Detail</strong></td><td>productDetail.jsp</td><td style="text-align: justify;">Choose sugar/ice/quantity and add drinks to cart.</td></tr>
+                <tr><td class="text-center">5</td><td><strong>Topping Selection</strong></td><td>toppingSelection.jsp</td><td style="text-align: justify;">Attach topping items to selected drink line in cart.</td></tr>
+                <tr><td class="text-center">6</td><td><strong>Cart Management</strong></td><td>cart.jsp</td><td style="text-align: justify;">Update quantities, remove lines, clear cart, and confirm total.</td></tr>
+                <tr><td class="text-center">7</td><td><strong>Checkout</strong></td><td>payment.jsp</td><td style="text-align: justify;">Review order summary and submit payment via VNPAY.</td></tr>
+                <tr><td class="text-center">8</td><td><strong>Payment Result</strong></td><td>paymentResult.jsp</td><td style="text-align: justify;">Display success/fail payment status and order amount.</td></tr>
+                <tr><td class="text-center">9</td><td><strong>Order History</strong></td><td>orderHistory.jsp</td><td style="text-align: justify;">Customer checks past orders and current status.</td></tr>
+                <tr><td class="text-center">10</td><td><strong>Order Detail</strong></td><td>orderDetail.jsp</td><td style="text-align: justify;">View line items, options, and repay pending orders.</td></tr>
+                <tr><td class="text-center">11</td><td><strong>Profile</strong></td><td>profile.jsp</td><td style="text-align: justify;">Update account information and change password.</td></tr>
+                <tr><td class="text-center">12</td><td><strong>Admin Dashboard</strong></td><td>admin/dashboard.jsp</td><td style="text-align: justify;">Monitor revenue and order/user/product KPIs.</td></tr>
+                <tr><td class="text-center">13</td><td><strong>Admin Products</strong></td><td>admin/products.jsp, admin/productForm.jsp</td><td style="text-align: justify;">Search and CRUD products, toggle availability.</td></tr>
+                <tr><td class="text-center">14</td><td><strong>Admin Categories</strong></td><td>admin/categories.jsp</td><td style="text-align: justify;">Inline add/edit/delete product categories.</td></tr>
+                <tr><td class="text-center">15</td><td><strong>Admin Orders</strong></td><td>admin/orders.jsp, admin/orderDetail.jsp</td><td style="text-align: justify;">Filter orders and update order status workflow.</td></tr>
+                <tr><td class="text-center">16</td><td><strong>Admin Users</strong></td><td>admin/users.jsp</td><td style="text-align: justify;">Search users, toggle account status, and delete users.</td></tr>
+            </tbody>
+        </table>
+
+        <div style="page-break-before: always;"></div>
+
+        <h3>2.2 Screen Authorization</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="5%">#</th>
+                    <th width="35%">Screen</th>
+                    <th width="15%">Guest</th>
+                    <th width="15%">Customer</th>
+                    <th width="15%">Admin</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td>Menu / Product Detail</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td>Registration</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td>Login</td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                </tr>
+                <tr>
+                    <td class="text-center">4</td>
+                    <td>Cart / Topping Selection / Checkout</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">5</td>
+                    <td>Order History / Order Detail / Repay</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">6</td>
+                    <td>Profile</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">7</td>
+                    <td>Admin Dashboard / Products / Categories / Orders / Users</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+                <tr>
+                    <td class="text-center">8</td>
+                    <td>Logout</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"><strong>x</strong></td>
+                    <td class="text-center"><strong>x</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <h2>3. Database Design</h2>
+
+        <div class="content-block">
+            <h3>3.1 Database Schema</h3>
+            <div class="image-box">
+                <a href="DatabaseDiagram.png" target="_blank">
+                    <img src="DatabaseDiagram.png" alt="Database Schema Diagram"
+                        style="max-width: 100%; height: auto;">
+                </a>
+                <p>Figure 3. Database Schema Diagram</p>
+            </div>
+        </div>
+
+        <h3>3.2 Table Descriptions</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="10%">No</th>
+                    <th width="30%">Table</th>
+                    <th width="60%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="text-center">1</td><td><strong>User</strong></td><td style="text-align: justify;">Stores account identity, email/password, role (ADMIN/CUSTOMER), active status, and created time.</td></tr>
+                <tr><td class="text-center">2</td><td><strong>Category</strong></td><td style="text-align: justify;">Product category master data.</td></tr>
+                <tr><td class="text-center">3</td><td><strong>Product</strong></td><td style="text-align: justify;">Catalog item with category, price, image path, and availability flag.</td></tr>
+                <tr><td class="text-center">4</td><td><strong>Order</strong></td><td style="text-align: justify;">Order header with customer, total amount, status, and created timestamp.</td></tr>
+                <tr><td class="text-center">5</td><td><strong>OrderItem</strong></td><td style="text-align: justify;">Line-item detail including sugar/ice options, quantity, and price.</td></tr>
+                <tr><td class="text-center">6</td><td><strong>Payment</strong></td><td style="text-align: justify;">Payment records by order, method, status, paid amount, and paid time.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+                <h2 class="section-header">II. Web Application</h2>
+        <p>This section summarizes the real BubbleHubWeb screens and key input fields.</p>
+
+        <h3>2.1 Customer Flow</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Page</th>
+                    <th width="25%">Key Fields</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>login.jsp</strong></td><td>email, password</td><td style="text-align: justify;">Authenticate user session for ordering features.</td></tr>
+                <tr><td><strong>register.jsp</strong></td><td>name, email, password, confirmPassword</td><td style="text-align: justify;">Create a new customer account.</td></tr>
+                <tr><td><strong>menu.jsp</strong></td><td>keyword, cid</td><td style="text-align: justify;">Browse product catalog with category filter and search.</td></tr>
+                <tr><td><strong>productDetail.jsp</strong></td><td>pid, sugarLevel, iceLevel, quantity</td><td style="text-align: justify;">Configure drink options and add to cart.</td></tr>
+                <tr><td><strong>toppingSelection.jsp</strong></td><td>drinkLineKey, toppingPid, quantity</td><td style="text-align: justify;">Add toppings linked to selected drink line.</td></tr>
+                <tr><td><strong>cart.jsp</strong></td><td>lineKey, quantity, subAction</td><td style="text-align: justify;">Update cart lines, remove items, clear cart, and proceed checkout.</td></tr>
+                <tr><td><strong>payment.jsp</strong></td><td>session cart summary</td><td style="text-align: justify;">Confirm order before VNPAY payment submit.</td></tr>
+                <tr><td><strong>paymentResult.jsp</strong></td><td>orderId, amount, transResult</td><td style="text-align: justify;">Show payment success/failure outcome.</td></tr>
+                <tr><td><strong>orderHistory.jsp</strong></td><td>orders</td><td style="text-align: justify;">List user orders with current status.</td></tr>
+                <tr><td><strong>orderDetail.jsp</strong></td><td>orderId, items</td><td style="text-align: justify;">Display order detail lines and allow repay for pending order.</td></tr>
+                <tr><td><strong>profile.jsp</strong></td><td>name, oldPassword, newPassword, confirmPassword</td><td style="text-align: justify;">Update profile information and change password.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+
+        <h3>2.2 Admin Flow</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th width="25%">Page</th>
+                    <th width="25%">Key Fields</th>
+                    <th width="50%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>admin/dashboard.jsp</strong></td><td>totalRevenue, countPending, countPaid, countServed, totalProducts, totalUsers</td><td style="text-align: justify;">Dashboard KPI cards for business monitoring.</td></tr>
+                <tr><td><strong>admin/products.jsp</strong></td><td>keyword, subAction, pid</td><td style="text-align: justify;">Search products and run add/edit/toggle/delete operations.</td></tr>
+                <tr><td><strong>admin/productForm.jsp</strong></td><td>name, cid, price, image_path, is_available</td><td style="text-align: justify;">Product create/edit form.</td></tr>
+                <tr><td><strong>admin/categories.jsp</strong></td><td>name, cid, subAction</td><td style="text-align: justify;">Category add/edit/delete management.</td></tr>
+                <tr><td><strong>admin/orders.jsp</strong></td><td>statusFilter, orderId</td><td style="text-align: justify;">List and filter orders by status.</td></tr>
+                <tr><td><strong>admin/orderDetail.jsp</strong></td><td>orderId, status</td><td style="text-align: justify;">Inspect order lines and update order status.</td></tr>
+                <tr><td><strong>admin/users.jsp</strong></td><td>keyword, uid, subAction</td><td style="text-align: justify;">Search users, toggle account status, and delete users.</td></tr>
+            </tbody>
+        </table>
+
+        <div class="page-break"></div>
+        <h2 class="section-header">III. Students Contribution</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th width="15%">Student Number</th>
+                    <th width="55%">Full Name</th>
+                    <th width="30%">Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center"><strong>SE193900</strong></td>
+                    <td>Nguyễn Xuân Quang</td>
+                    <td class="text-center">33,33%</td>
+                </tr>
+                <tr>
+                    <td class="text-center"><strong>SE196220</strong></td>
+                    <td>Trần Thường Quang</td>
+                    <td class="text-center">33,33%</td>
+                </tr>
+                <tr>
+                    <td class="text-center"><strong>SE193083</strong></td>
+                    <td>Nguyễn Lê Hữu Trí</td>
+                    <td class="text-center">33,33%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 class="section-header">IV. Appendix</h2>
+
+        <h3>4.1. Block Diagram</h3>
+        <div class="image-box">
+            <a href="BlockDiagram.png" target="_blank">
+                <img src="BlockDiagram.png" alt="BubbleHub Block Diagram" style="max-width: 100%; height: auto;">
+            </a>
+            <p>Figure: BubbleHub block diagram.</p>
+        </div>
+
+        <h3>4.2. Flowchart</h3>
+        <div class="image-box">
+            <a href="FlowchartDiagram.png" target="_blank">
+                <img src="FlowchartDiagram.png" alt="BubbleHub Flowchart" style="max-width: 100%; height: auto;">
+            </a>
+            <p>Figure: BubbleHub system flowchart.</p>
+        </div>
+
+        <h3>4.3. Figma Prototype</h3>
+        <div class="image-box" style="padding: 10px;">
+            <iframe
+                title="BubbleHub Figma Prototype"
+                style="width: 100%; height: 700px; border: 1px solid #d9d9d9; background: #ffffff;"
+                src="https://embed.figma.com/site/wnnZmiMFKnOpR0mpz2dwpu/Untitled?node-id=0-1&embed-host=share"
+                allowfullscreen>
+            </iframe>
+            <p>
+                If embed is blocked, open directly:
+                <a href="https://www.figma.com/site/wnnZmiMFKnOpR0mpz2dwpu/Untitled?node-id=0-1&t=m8p8xYcYwB88pxWi-1" target="_blank">
+                    View on Figma
+                </a>
+            </p>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebar = document.createElement('nav');
+            sidebar.id = 'floating-toc';
+            sidebar.innerHTML = '<h5>In this report</h5>';
+            const sidebarList = document.createElement('ul');
+            sidebar.appendChild(sidebarList);
+            document.body.appendChild(sidebar);
+
+            const tocContainer = document.getElementById('toc');
+            const headings = document.querySelectorAll('h2:not(.no-toc), h3:not(.no-toc), h4:not(.no-toc)');
+            const pageTocList = document.createElement('ul');
+
+            headings.forEach((heading, index) => {
+                const titleText = heading.innerText.trim();
+                if (titleText === "Table of Content" || heading.closest('.full-page-section')) {
+                    return;
+                }
+
+                const level = heading.tagName.toLowerCase();
+                const id = 'section-' + index;
+                heading.id = id;
+                if (tocContainer) {
+                    const li = document.createElement('li');
+                    li.className = 'toc-' + level;
+
+                    const a = document.createElement('a');
+                    a.href = '#' + id;
+                    if (level === 'h2') {
+                        const strong = document.createElement('strong');
+                        strong.textContent = titleText;
+                        a.appendChild(strong);
+                    } else {
+                        a.textContent = titleText;
+                    }
+
+                    li.appendChild(a);
+                    pageTocList.appendChild(li);
+                }
+                const sLi = document.createElement('li');
+                sLi.className = 'toc-' + level;
+                const sA = document.createElement('a');
+                sA.href = '#' + id;
+                sA.textContent = titleText;
+                sLi.appendChild(sA);
+                sidebarList.appendChild(sLi);
+            });
+
+            if (tocContainer) {
+                tocContainer.innerHTML = '';
+                tocContainer.appendChild(pageTocList);
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+
+
